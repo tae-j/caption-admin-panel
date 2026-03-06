@@ -54,12 +54,14 @@ export function AuthProvider({ children }) {
     setAuthError(null)
   }
 
-  async function signInWithGoogle() {
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: window.location.origin + '/auth/callback' }
-    })
-  }
+async function signInWithGoogle() {
+  await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: { 
+      redirectTo: 'https://admin-panel-black-one.vercel.app/auth/callback'
+    }
+  })
+}
 
   async function signOut() {
     await supabase.auth.signOut()
