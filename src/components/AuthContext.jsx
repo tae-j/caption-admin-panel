@@ -9,15 +9,27 @@ export function AuthProvider({ children }) {
   const [authError, setAuthError] = useState(null)
 
   useEffect(() => {
+    // Handle hash fragment from OAuth redirect
+    if (window.location.hash.includes('access_token')) {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) {
+          setSession(session)
+          fetchProfile(session.user.id)
+          window.history.replaceState(null, '', window.location.pathname)
+        }
+      })
+    }
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       if (session) fetchProfile(session.user.id)
       else setSession(null)
     })
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
       if (session) fetchProfile(session.user.id)
-      else { setProfile(null) }
+      else setProfile(null)
     })
     return () => subscription.unsubscribe()
   }, [])
@@ -43,13 +55,11 @@ export function AuthProvider({ children }) {
   }
 
   async function signInWithGoogle() {
-  await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: { 
-      redirectTo: `${window.location.origin}/auth/callback`
-    }
-  })
-}
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin + '/auth/callback' }
+    })
+  }
 
   async function signOut() {
     await supabase.auth.signOut()
